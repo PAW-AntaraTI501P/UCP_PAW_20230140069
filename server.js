@@ -2,17 +2,13 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const todoRoutes = require("./routes/tododb.js");
-// const todoRoutes = require("./routes/todo.js"); // Uncomment this line if you want to use the dummy data route instead
 const path = require("path");
 const db = require("./database/db");
 const port = process.env.PORT || 3001;
-
 const expressLayouts = require("express-ejs-layouts");
-app.use(expressLayouts);
+
 // Middleware
-const cors = require("cors");
-app.use(cors());
+app.use(expressLayouts);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -21,9 +17,7 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.set("layout", "layouts/main-layouts");
 
-let todos = [];
-
-// --- Rute Utama ---
+// === Rute Utama ===
 app.get("/", (req, res) => {
   res.render("index", {
     layout: "layouts/main-layouts",
@@ -36,59 +30,74 @@ app.get("/contact", (req, res) => {
   });
 });
 
-
-
-app.use("/todos", todoRoutes);
-
-app.get("/todos-list", (req, res) => {
-  res.render("todos-page", { todos: todos, layout: "layouts/main-layouts" });
-});
-
-app.get("/todo-view", (req, res) => {
-  db.query("SELECT * FROM todos", (err, todos) => {
+// === Rute untuk menampilkan data dari database ===
+app.get("/books", (req, res) => {
+  db.query("SELECT * FROM books", (err, books) => {
     if (err) {
-      console.error("Error fetching todos:", err);
+      console.error("Error fetching books:", err);
       return res.status(500).send("Internal Server Error");
     }
-    res.render("todo", { todos: todos, layout: "layouts/main-layouts" });
+    res.render("books-page", { books: books, layout: "layouts/main-layouts" });
+  });
+});
+
+// === Rute CRUD untuk Database ===
+
+// CREATE: Menambahkan buku baru ke database
+app.post("/add-book", (req, res) => {
+  const newBookTitle = req.body.title;
+  if (!newBookTitle || newBookTitle.trim() === '') {
+    return res.status(400).send("Judul buku tidak boleh kosong.");
+  }
+
+  db.query("INSERT INTO books (title) VALUES (?)", [newBookTitle.trim()], (err, results) => {
+    if (err) {
+      console.error("Error adding book to database:", err);
+      return res.status(500).send("Internal Server Error");
+    }
+    res.redirect("/books"); // Arahkan kembali ke daftar buku
+  });
+});
+
+// UPDATE: Memperbarui judul buku di database
+app.post("/update-book/:id", (req, res) => {
+  const bookId = req.params.id;
+  const updatedTitle = req.body.title;
+  
+  if (!updatedTitle || updatedTitle.trim() === '') {
+    return res.status(400).send("Judul buku tidak boleh kosong.");
+  }
+
+  db.query("UPDATE books SET title = ? WHERE id = ?", [updatedTitle.trim(), bookId], (err, results) => {
+    if (err) {
+      console.error("Error updating book:", err);
+      return res.status(500).send("Internal Server Error");
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).send("Buku tidak ditemukan.");
+    }
+    res.redirect("/books");
+  });
+});
+
+// DELETE: Menghapus buku dari database
+app.post("/delete-book/:id", (req, res) => {
+  const bookId = req.params.id;
+
+  db.query("DELETE FROM books WHERE id = ?", [bookId], (err, results) => {
+    if (err) {
+      console.error("Error deleting book:", err);
+      return res.status(500).send("Internal Server Error");
+    }
+    if (results.affectedRows === 0) {
+      return res.status(404).send("Buku tidak ditemukan.");
+    }
+    res.redirect("/books");
   });
 });
 
 
-// --- Rute CRUD ---
-// CREATE: Menambah tugas baru
-app.post("/add-todo", (req, res) => {
-  const newTask = req.body.task;
-  const newId = todos.length > 0 ? todos[todos.length - 1].id + 1 : 1;
-  todos.push({ id: newId, task: newTask });
-  res.redirect("/todos-list");
-});
-
-// UPDATE: Menangani pengiriman formulir edit
-app.post("/update-todo/:id", (req, res) => {
-  const todoId = parseInt(req.params.id);
-  const updatedTask = req.body.task;
-
-  // Mencari indeks (posisi) tugas di dalam array 'todos'
-  const todoIndex = todos.findIndex((todo) => todo.id === todoId);
-
-  // Jika tugas ditemukan (indeks bukan -1), perbarui teks tugasnya
-  if (todoIndex !== -1) {
-    todos[todoIndex].task = updatedTask;
-  }
-
-  // Setelah selesai, arahkan kembali ke halaman daftar tugas
-  res.redirect("/todos-list");
-});
-
-// DELETE: Menghapus tugas
-app.post("/delete-todo/:id", (req, res) => {
-  const todoId = parseInt(req.params.id);
-  todos = todos.filter((todo) => todo.id !== todoId);
-  res.redirect("/todos-list");
-});
-
-// Middleware 404
+// Middleware 404 (harus di akhir)
 app.use((req, res, next) => {
   res.status(404).send("404 - page not found");
 });

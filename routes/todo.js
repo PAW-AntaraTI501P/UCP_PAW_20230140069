@@ -16,7 +16,7 @@ router.get("/", (req, res) => {
 // Endpoint untuk mendapatkan tugas berdasarkan ID
 router.get("/:id", (req, res) => {
   const todo = todos.find((t) => t.id === parseInt(req.params.id));
-  if (!todo) return res.status(404).send("Tugas tidak ditemukan");
+  if (!todo) return res.status(404).send("Buku tidak ditemukan");
   res.json(todo);
 });
 
@@ -33,7 +33,7 @@ router.post("/", (req, res) => {
 // Endpoint untuk memperbarui tugas
 router.put("/:id", (req, res) => {
   const todo = todos.find((t) => t.id === parseInt(req.params.id));
-  if (!todo) return res.status(404).send("Tugas tidak ditemukan");
+  if (!todo) return res.status(404).send("Buku tidak ditemukan");
 
   todo.task = req.body.task;
   res.json(todo);
@@ -42,7 +42,7 @@ router.put("/:id", (req, res) => {
 // Endpoint untuk menghapus tugas
 router.delete("/:id", (req, res) => {
   const todoIndex = todos.findIndex((t) => t.id === parseInt(req.params.id));
-  if (todoIndex === -1) return res.status(404).send("Tugas tidak ditemukan");
+  if (todoIndex === -1) return res.status(404).send("Buku tidak ditemukan");
 
   todos.splice(todoIndex, 1);
   res.status(204).send();
