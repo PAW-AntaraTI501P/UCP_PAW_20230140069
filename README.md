@@ -3,8 +3,10 @@ hasil get
 hasil post
 <img width="1919" height="1148" alt="image" src="https://github.com/user-attachments/assets/b0ccfb56-d33d-472a-8569-208a8cb13311" />
 hasil put
-
+hasil delete
+<img width="1919" height="1090" alt="image" src="https://github.com/user-attachments/assets/f2e3b899-2bbc-42ac-9b2b-67dbbf77fa92" />
 database
-<img width="1917" height="1089" alt="image" src="https://github.com/user-attachments/assets/af882784-f7b3-4820-8e78-2d97514d30a0" />
+<img width="1919" height="1092" alt="image" src="https://github.com/user-attachments/assets/050cf75b-8a06-43a1-a605-ce0b4a296326" />
+
 
 
